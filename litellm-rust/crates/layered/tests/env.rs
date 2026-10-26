@@ -1,6 +1,7 @@
+use litellm_core_utils::coercion;
 use std::{path::PathBuf, time::Duration};
 
-use litellm_layered::{Env, Error, Layered, Lookup, read, read_env};
+use litellm_layered::{Env, Error, Layered, Lookup, read_env};
 use rstest::rstest;
 use serde_json::{Value, json};
 
@@ -9,13 +10,13 @@ use serde_json::{Value, json};
 struct Settings {
     #[layer(env = ["FIRST_NAME", "SECOND_NAME"], skip_blank)]
     name: String,
-    #[layer(env = "SWITCH", read = read::enabled)]
+    #[layer(env = "SWITCH", read = coercion::enabled)]
     switch: bool,
     #[layer(env = "COUNT")]
     count: u32,
-    #[layer(env = "PORT", read = read::required::<u16>)]
+    #[layer(env = "PORT", read = coercion::required::<u16>)]
     port: u16,
-    #[layer(env = "IDLE", read = read::seconds)]
+    #[layer(env = "IDLE", read = coercion::seconds)]
     idle: Duration,
     #[layer(from_env = window_from_env)]
     window: (u32, u32),
@@ -25,8 +26,8 @@ struct Settings {
 }
 
 fn window_from_env(env: &(impl Lookup + ?Sized)) -> Result<Option<(u32, u32)>, Error> {
-    let start = read_env(env, &["WINDOW_START"], false, read::required::<u32>)?;
-    let end = read_env(env, &["WINDOW_END"], false, read::required::<u32>)?;
+    let start = read_env(env, &["WINDOW_START"], false, coercion::required::<u32>)?;
+    let end = read_env(env, &["WINDOW_END"], false, coercion::required::<u32>)?;
     Ok(start.zip(end))
 }
 

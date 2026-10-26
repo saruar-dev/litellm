@@ -89,10 +89,10 @@ fn expand(input: &DeriveInput) -> syn::Result<TokenStream2> {
             return quote!(#ident: ::core::option::Option::None);
         }
         let names = &attributes.env;
-        let read = attributes
-            .read
-            .clone()
-            .map_or_else(|| quote!(#layered::read::value), |read| quote!(#read));
+        let read = attributes.read.clone().map_or_else(
+            || quote!(#layered::__private::coercion::value),
+            |read| quote!(#read),
+        );
         quote!(#ident: #layered::read_env(env, &[#(#names),*], #skip_blank, #read)?)
     });
     let param_fields = fields.iter().map(|field| {

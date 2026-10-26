@@ -27,8 +27,9 @@ A hand-written constructor names every field of the partial and writes `None` wh
 - String and path fields preserve their environment input, including blanks
 - Numeric fields use lenient parsing and invalid values fall through
 - Boolean fields reuse `core-utils::coercion::parse_str_bool`, including explicit false
-- Use `read = read::enabled` when false must fall through, as for Python HTTP2
+- Use `read = coercion::enabled` when false must fall through, as for Python HTTP2
 - Use `skip_blank` only for sources whose existing contract treats blanks as unset
-- Use named readers for exceptional conversion, units, or strict validation
+- Shared conversions live in `core-utils::coercion`, not `layered`
+- Use named coercions for exceptional conversion, units, or strict validation
 - Keep Python SSL environment values above globals even when blank
 - `label` controls display text and `litellm_setting` supplies source metadata, not a generated global reader

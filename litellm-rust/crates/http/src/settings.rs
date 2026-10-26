@@ -3,8 +3,8 @@ use std::{
     time::Duration,
 };
 
-use litellm_core_utils::coercion::parse_str_bool;
-use litellm_layered::{Invalid, Layered, Lookup, read, read_env};
+use litellm_core_utils::coercion::{self, parse_str_bool};
+use litellm_layered::{Invalid, Layered, Lookup, read_env};
 
 use crate::proxy::EnvironmentProxies;
 
@@ -38,18 +38,19 @@ pub struct TcpKeepalive {
 
 impl TcpKeepalive {
     pub fn from_env(env: &(impl Lookup + ?Sized)) -> Result<Option<Self>, litellm_layered::Error> {
-        if read_env(env, &["AIOHTTP_SO_KEEPALIVE"], false, read::enabled)?.is_none() {
+        if read_env(env, &["AIOHTTP_SO_KEEPALIVE"], false, coercion::enabled)?.is_none() {
             return Ok(None);
         }
         let seconds = |names: &'static [&'static str], default: u64| {
             Ok::<_, litellm_layered::Error>(
-                read_env(env, names, false, read::seconds)?.unwrap_or(Duration::from_secs(default)),
+                read_env(env, names, false, coercion::seconds)?
+                    .unwrap_or(Duration::from_secs(default)),
             )
         };
         Ok(Some(Self {
             idle: seconds(&["AIOHTTP_TCP_KEEPIDLE"], 60)?,
             interval: seconds(&["AIOHTTP_TCP_KEEPINTVL"], 30)?,
-            retries: read_env(env, &["AIOHTTP_TCP_KEEPCNT"], false, read::parsed)?.unwrap_or(5),
+            retries: read_env(env, &["AIOHTTP_TCP_KEEPCNT"], false, coercion::parsed)?.unwrap_or(5),
         }))
     }
 }
@@ -58,7 +59,7 @@ impl TcpKeepalive {
 pub struct HttpKeys {
     #[layer(env = "SSL_VERIFY", read = SslVerify::parse_env, litellm_setting = "ssl_verify")]
     pub ssl_verify: SslVerify,
-    #[layer(env = "SSL_CERT_FILE", read = read::truthy)]
+    #[layer(env = "SSL_CERT_FILE", read = coercion::truthy)]
     pub ssl_cert_file: PathBuf,
     #[layer(env = "SSL_CERTIFICATE", litellm_setting = "ssl_certificate")]
     pub ssl_certificate: PathBuf,
@@ -68,19 +69,19 @@ pub struct HttpKeys {
     pub ssl_ecdh_curve: String,
     #[layer(litellm_setting = "force_ipv4")]
     pub force_ipv4: bool,
-    #[layer(env = "LITELLM_HTTP2", read = read::enabled, litellm_setting = "http2")]
+    #[layer(env = "LITELLM_HTTP2", read = coercion::enabled, litellm_setting = "http2")]
     pub http2: bool,
-    #[layer(env = "AIOHTTP_TRUST_ENV", read = read::enabled, litellm_setting = "aiohttp_trust_env")]
+    #[layer(env = "AIOHTTP_TRUST_ENV", read = coercion::enabled, litellm_setting = "aiohttp_trust_env")]
     pub aiohttp_trust_env: bool,
     #[layer(
         env = "DISABLE_AIOHTTP_TRUST_ENV",
-        read = read::enabled,
+        read = coercion::enabled,
         litellm_setting = "disable_aiohttp_trust_env"
     )]
     pub disable_aiohttp_trust_env: bool,
     #[layer(
         env = "DISABLE_AIOHTTP_TRANSPORT",
-        read = read::enabled,
+        read = coercion::enabled,
         litellm_setting = "disable_aiohttp_transport"
     )]
     pub disable_aiohttp_transport: bool,
@@ -88,7 +89,7 @@ pub struct HttpKeys {
     pub user_agent: String,
     #[layer(from_env = TcpKeepalive::from_env)]
     pub tcp_keepalive: TcpKeepalive,
-    #[layer(env = "AIOHTTP_KEEPALIVE_TIMEOUT", read = read::seconds)]
+    #[layer(env = "AIOHTTP_KEEPALIVE_TIMEOUT", read = coercion::seconds)]
     pub pool_idle_timeout: Duration,
     #[layer(from_env = EnvironmentProxies::from_env)]
     pub proxies: EnvironmentProxies,
