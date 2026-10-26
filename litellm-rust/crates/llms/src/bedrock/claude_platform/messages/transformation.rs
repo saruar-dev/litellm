@@ -4,7 +4,7 @@ use litellm_auth::{CredentialPlacement, SecretValue};
 use litellm_auth_aws::{AwsCredentialSource, resolve_aws_region};
 use litellm_core_utils::settings::resolve_non_empty;
 use litellm_http::request::{header_value, with_header, without_headers};
-use litellm_layered::{Layered, read};
+use litellm_layered::Layered;
 use litellm_llms_types::{
     formats::messages::{MessagesOptionalParams, MessagesRequest},
     providers::anthropic::{BetaProvider, DEFAULT_HEADERS, MESSAGES_PATH},
@@ -35,6 +35,7 @@ const WORKSPACE_HEADER: &str = "anthropic-workspace-id";
 #[expect(dead_code, reason = "only WorkspaceKeysPartial is built")]
 struct WorkspaceKeys {
     #[layer(
+        skip_blank,
         litellm_param = [
             "workspace_id",
             "aws_workspace_id",
@@ -42,8 +43,7 @@ struct WorkspaceKeys {
             "anthropic_workspace_id",
         ],
         env = ["ANTHROPIC_AWS_WORKSPACE_ID", "ANTHROPIC_WORKSPACE_ID"],
-        read = read::text,
-        setting = "workspace_id"
+        label = "workspace_id"
     )]
     workspace_id: String,
 }
