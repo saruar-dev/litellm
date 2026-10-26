@@ -1,5 +1,6 @@
 use litellm_auth_types::SecretValue;
-use litellm_layered::{Invalid, Layered, read};
+use litellm_core_utils::coercion;
+use litellm_layered::{Invalid, Layered};
 use litellm_tracing::Level;
 
 #[derive(Layered)]
@@ -7,7 +8,7 @@ use litellm_tracing::Level;
 pub(super) struct BootKeys {
     #[layer(env = "HOST")]
     host: String,
-    #[layer(env = "PORT", read = read::required::<u16>)]
+    #[layer(env = "PORT", read = coercion::required::<u16>)]
     port: u16,
     #[layer(env = "LITELLM_CONFIG")]
     litellm_config: String,
@@ -53,7 +54,7 @@ pub(super) struct UiKeys {
     ui_username: String,
     #[layer(env = "UI_PASSWORD", read = secret, secret)]
     ui_password: SecretValue,
-    #[layer(env = "LITELLM_UI_SECURE_COOKIES", read = read::required::<bool>)]
+    #[layer(env = "LITELLM_UI_SECURE_COOKIES", read = coercion::required::<bool>)]
     litellm_ui_secure_cookies: bool,
 }
 

@@ -1,6 +1,7 @@
 use std::time::Duration;
 
-use litellm_layered::{Invalid, Layered, read};
+use litellm_core_utils::coercion;
+use litellm_layered::{Invalid, Layered};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct OcrSettings {
@@ -63,17 +64,18 @@ impl From<OcrKeysPartial> for OcrSettings {
 }
 
 fn timeout_seconds(value: &str) -> Result<Option<Duration>, Invalid> {
-    Ok(read::parsed::<f64>(value)?.and_then(|seconds| Duration::try_from_secs_f64(seconds).ok()))
+    Ok(coercion::parsed::<f64>(value)?
+        .and_then(|seconds| Duration::try_from_secs_f64(seconds).ok()))
 }
 
 fn download_megabytes(value: &str) -> Result<Option<u64>, Invalid> {
-    Ok(read::parsed::<f64>(value)?
+    Ok(coercion::parsed::<f64>(value)?
         .filter(|size| size.is_finite())
         .map(megabytes))
 }
 
 fn polling_seconds(value: &str) -> Result<Option<Duration>, Invalid> {
-    Ok(read::parsed::<i64>(value)?
+    Ok(coercion::parsed::<i64>(value)?
         .map(|seconds| Duration::from_secs(seconds.max(0).unsigned_abs())))
 }
 
