@@ -3731,6 +3731,7 @@ dependencies = [
  "http-body-util",
  "litellm-auth-types",
  "litellm-config",
+ "litellm-core-utils",
  "litellm-gateway-auth",
  "litellm-gateway-inference",
  "litellm-gateway-mcp",
